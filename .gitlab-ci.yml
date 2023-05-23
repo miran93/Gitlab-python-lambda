@@ -1,0 +1,33 @@
+default:
+  image:
+    name: python:3.9
+
+stages:
+  - archiving
+  - deploy
+
+archive:
+  stage: archiving
+
+  before_script:
+    - apt-get update
+    - apt-get install zip -y
+
+  script:
+    - echo "Archiving lambda code"
+    - zip -r $CI_PROJECT_NAME.zip *
+
+  artifacts:
+    paths:
+      - $CI_PROJECT_NAME.zip
+
+deployment:
+  stage: deploy
+
+  before_script:
+    - pip install awscli
+    - aws --version
+
+  script:
+    - echo "Deploying code"
+    - aws lambda update-function-code --function-name $LAMBDA_FUNCTION --zip-file fileb://$CI_PROJECT_NAME.zip
